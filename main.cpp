@@ -6,7 +6,7 @@
 
 using namespace std;
 
-/* Program name: Prepared Statements
+/* Program name: Sakila revisited
 *  Author: Lauren Davis
 *  Date last updated: 5/9/2026
 * Purpose: With this program the user is able to view information from the Sakila database. The user can choose to view customer information or view the rentals for a customer. If the user wishes to exit the program from the starting page they type in -1, otherwise -1 will have the user go back a page. If they want to the next page they enter 0. The user is also able to chose how many results they want to see per page and which customer's rental they would like to view.
