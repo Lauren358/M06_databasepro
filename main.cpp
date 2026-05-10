@@ -16,6 +16,7 @@ using namespace std;
 void printMainMenu();
 void viewRental(sqlite3 *);
 void viewCustomer(sqlite3 *);
+void addRental(sqlite3 *);
 int mainMenu();
 void printCustomerPage(sqlite3_stmt *, int, int);
 void printRentalPage(sqlite3_stmt *, int, int);
@@ -79,6 +80,7 @@ void printMainMenu()
 	cout << "Please choose an option (enter -1 to quit):  " << endl;
 	cout << "1. View the rentals for a customer" << endl;
 	cout << "2. View Customer Information" << endl;
+	cout << "3. Enter a Rental" << endl;
 	cout << "Enter Choice: ";
 }
 
