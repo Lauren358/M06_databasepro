@@ -46,10 +46,27 @@ int main()
 	{
 		switch (choice) 
 		{
-			case 1: viewRental(mydb); break;
-			case 2: viewCustomer(mydb); break;
-			case -1: return 0;
-			default: cout << "That is not a valid choice." << endl;
+			case 1: 
+			    viewRental(mydb); 
+			    break;
+			
+			
+			case 2: 
+			    viewCustomer(mydb);
+			    break;
+			
+			
+			case 3: 
+			    addRental(mydb);
+			    break;
+			
+			//closes the database and exits program
+			case -1: 
+			    sqlite3_close(mydb);
+			    return 0;
+			
+			default: 
+			    cout << "That is not a valid choice." << endl;
 		}
 		cout << "\n\n";
 		choice = mainMenu();
@@ -445,4 +462,392 @@ cout << "Active: " << (active ? "Yes" : "No") << endl;
 cout << "Last Update: " << lastUpdate << endl;
 }
     sqlite3_finalize(detailStmt);
+}
+
+//user can add rental
+void addRental(sqlite3 *db)
+{
+    sqlite3_stmt *stmt;
+
+    int choice;
+    int customerID;
+    int inventoryID;
+    int staffID;
+
+    int totalRows = 0;
+    int result;
+
+    string query;
+
+    cout << "\n---- Add Rental ----\n" << endl;
+
+    // customer menu 
+query =
+    "SELECT customer_id, first_name, last_name "
+    "FROM customer "
+    "ORDER BY first_name, last_name";
+
+if (sqlite3_prepare_v2(db,
+                       query.c_str(),
+                       -1,
+                       &stmt,
+                       NULL) != SQLITE_OK)
+{
+    cout << "Error preparing customer query." << endl;
+    return;
+}
+
+int rowsPerPage;
+int start = 0;
+
+totalRows = 0;
+
+while ((result = sqlite3_step(stmt)) == SQLITE_ROW)
+    totalRows++;
+
+sqlite3_reset(stmt);
+
+cout << "There are "
+     << totalRows
+     << " customers. How many would you like to see per page? ";
+
+cin >> rowsPerPage;
+
+while (!cin || rowsPerPage <= 0)
+{
+    if (!cin)
+    {
+        cin.clear();
+        cin.ignore(INT_MAX, '\n');
+    }
+
+    cout << "Invalid choice. Try again: ";
+    cin >> rowsPerPage;
+}
+
+choice = 0;
+
+while (choice == 0)
+{
+    sqlite3_reset(stmt);
+
+    for (int i = 0; i < start; i++)
+        sqlite3_step(stmt);
+
+    cout << "\nPlease choose the customer for the rental (enter 0 to go to the next page): "<< endl;
+
+    for (int i = 1; i <= rowsPerPage; i++)
+    {
+        result = sqlite3_step(stmt);
+
+        if (result != SQLITE_ROW)
+            break;
+
+        cout << i + start << ". ";
+
+        cout << sqlite3_column_int(stmt, 0)
+             << " - ";
+
+        cout << sqlite3_column_text(stmt, 1)
+             << " ";
+
+        cout << sqlite3_column_text(stmt, 2)
+             << endl;
+    }
+
+    cout << "\nEnter choice: ";
+    cin >> choice;
+
+    while (!cin || choice < 0 || choice > totalRows)
+    {
+        if (!cin)
+        {
+            cin.clear();
+            cin.ignore(INT_MAX, '\n');
+        }
+
+        cout << "That is not a valid choice." << endl;
+        cin >> choice;
+    }
+
+    if (choice == 0)
+    {
+        start += rowsPerPage;
+
+        if (start >= totalRows)
+            start = 0;
+    }
+}
+
+sqlite3_reset(stmt);
+
+for (int i = 1; i <= choice; i++)
+    sqlite3_step(stmt);
+
+customerID = sqlite3_column_int(stmt, 0);
+
+sqlite3_finalize(stmt);
+
+    // movie menu
+
+    
+totalRows = 0;
+start = 0;
+
+query =
+    "SELECT inventory.inventory_id, film.title "
+    "FROM inventory "
+    "JOIN film "
+    "ON inventory.film_id = film.film_id "
+    "ORDER BY film.title";
+
+sqlite3_prepare_v2(db,
+                   query.c_str(),
+                   -1,
+                   &stmt,
+                   NULL);
+
+while ((result = sqlite3_step(stmt)) == SQLITE_ROW)
+    totalRows++;
+
+sqlite3_reset(stmt);
+
+cout << "\nThere are "
+     << totalRows
+     << " movies. How many would you like to see per page? ";
+
+cin >> rowsPerPage;
+
+while (!cin || rowsPerPage <= 0)
+{
+    if (!cin)
+    {
+        cin.clear();
+        cin.ignore(INT_MAX, '\n');
+    }
+
+    cout << "Invalid choice. Try again: ";
+    cin >> rowsPerPage;
+}
+
+choice = 0;
+
+while (choice == 0)
+{
+    sqlite3_reset(stmt);
+
+    for (int i = 0; i < start; i++)
+        sqlite3_step(stmt);
+
+    cout << "\nPlease choose the film you want to rent (enter 0 to go to the next page): "<< endl;
+
+    for (int i = 1; i <= rowsPerPage; i++)
+    {
+        result = sqlite3_step(stmt);
+
+        if (result != SQLITE_ROW)
+            break;
+
+        cout << i + start << ". ";
+
+        cout << sqlite3_column_int(stmt, 0)
+             << " - ";
+
+        cout << sqlite3_column_text(stmt, 1)
+             << endl;
+    }
+
+    cout << "\nEnter choice: ";
+    cin >> choice;
+
+    while (!cin || choice < 0 || choice > totalRows)
+    {
+        if (!cin)
+        {
+            cin.clear();
+            cin.ignore(INT_MAX, '\n');
+        }
+
+        cout << "That is not a valid choice." << endl;
+        cin >> choice;
+    }
+
+    if (choice == 0)
+    {
+        start += rowsPerPage;
+
+        if (start >= totalRows)
+            start = 0;
+    }
+}
+
+sqlite3_reset(stmt);
+
+for (int i = 1; i <= choice; i++)
+    sqlite3_step(stmt);
+
+inventoryID = sqlite3_column_int(stmt, 0);
+
+sqlite3_finalize(stmt);
+
+    // staff menu
+
+    totalRows = 0;
+
+    query =
+        "SELECT staff_id, first_name, last_name "
+        "FROM staff ";
+
+    sqlite3_prepare_v2(db,
+                       query.c_str(),
+                       -1,
+                       &stmt,
+                       NULL);
+
+    cout << "\nChoose a staff member:\n" << endl;
+
+    while ((result = sqlite3_step(stmt)) == SQLITE_ROW)
+    {
+        totalRows++;
+
+        cout << totalRows << ". ";
+
+        cout << sqlite3_column_int(stmt, 0)
+             << " - ";
+
+        cout << sqlite3_column_text(stmt, 1)
+             << " ";
+
+        cout << sqlite3_column_text(stmt, 2)
+             << endl;
+    }
+
+    cout << "\nEnter choice: ";
+    cin >> choice;
+
+    while (!cin || choice < 1 || choice > totalRows)
+    {
+        if (!cin)
+        {
+            cin.clear();
+            cin.ignore(INT_MAX, '\n');
+        }
+
+        cout << "That is not a valid choice." << endl;
+        cout << "Enter choice: ";
+        cin >> choice;
+    }
+
+    sqlite3_reset(stmt);
+
+    for (int i = 0; i < choice; i++)
+        sqlite3_step(stmt);
+
+    staffID = sqlite3_column_int(stmt, 0);
+
+    sqlite3_finalize(stmt);
+
+    // begin transaction
+
+    char *errMsg = nullptr;
+
+    sqlite3_exec(db,
+                 "BEGIN TRANSACTION;",
+                 NULL,
+                 NULL,
+                 &errMsg);
+
+    // insert rental
+
+    string rentalQuery =
+        "INSERT INTO rental "
+        "(rental_date, inventory_id, customer_id, "
+        "return_date, staff_id, last_update) "
+        "VALUES(datetime('now'), ?, ?, NULL, ?, datetime('now'));";
+
+    sqlite3_stmt *rentalStmt;
+
+    sqlite3_prepare_v2(db,
+                       rentalQuery.c_str(),
+                       -1,
+                       &rentalStmt,
+                       NULL);
+
+    sqlite3_bind_int(rentalStmt, 1, inventoryID);
+    sqlite3_bind_int(rentalStmt, 2, customerID);
+    sqlite3_bind_int(rentalStmt, 3, staffID);
+
+    if (sqlite3_step(rentalStmt) != SQLITE_DONE)
+    {
+        cout << "Rental insert failed." << endl;
+
+        sqlite3_exec(db,
+                     "ROLLBACK;",
+                     NULL,
+                     NULL,
+                     &errMsg);
+
+        sqlite3_finalize(rentalStmt);
+
+        return;
+    }
+
+    sqlite3_finalize(rentalStmt);
+
+    // get rental Id
+
+    int rentalID = sqlite3_last_insert_rowid(db);
+
+    // insert payment
+
+    string paymentQuery =
+        "INSERT INTO payment "
+        "(customer_id, staff_id, rental_id, amount, payment_date) "
+        "VALUES(?, ?, ?, 4.99, datetime('now'));";
+
+    sqlite3_stmt *paymentStmt;
+
+    sqlite3_prepare_v2(db,
+                       paymentQuery.c_str(),
+                       -1,
+                       &paymentStmt,
+                       NULL);
+
+    sqlite3_bind_int(paymentStmt, 1, customerID);
+    sqlite3_bind_int(paymentStmt, 2, staffID);
+    sqlite3_bind_int(paymentStmt, 3, rentalID);
+
+    if (sqlite3_step(paymentStmt) != SQLITE_DONE)
+    {
+        cout << "Payment insert failed." << endl;
+
+        sqlite3_exec(db,
+                     "ROLLBACK;",
+                     NULL,
+                     NULL,
+                     &errMsg);
+
+        sqlite3_finalize(paymentStmt);
+
+        return;
+    }
+
+   sqlite3_finalize(paymentStmt);
+
+// get payment id
+
+int paymentID = sqlite3_last_insert_rowid(db);
+
+// commit transaction
+
+sqlite3_exec(db,
+             "COMMIT;",
+             NULL,
+             NULL,
+             &errMsg);
+
+cout << "\nRental and Payment entered successfully.\n" << "Rental Id: " << rentalID << endl;
+
+cout << "Payment ID: "
+     << paymentID << endl;
 }
