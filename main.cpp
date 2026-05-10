@@ -11,7 +11,7 @@ using namespace std;
 *  Date last updated: 5/9/2026
 * Purpose: With this program the user is able to view information from the Sakila database. The user can choose to view customer information or view the rentals for a customer. If the user wishes to exit the program from the starting page they type in -1, otherwise -1 will have the user go back a page. If they want to the next page they enter 0. The user is also able to chose how many results they want to see per page and which customer's rental they would like to view.
 */
-//Note: AI was used to ensure there were no synatx errors 
+//Note: AI was used to ensure there were no synatx errors and formatting is done correctly 
 
 void printMainMenu();
 void viewRental(sqlite3 *);
@@ -125,7 +125,7 @@ void viewRental(sqlite3 *db)
 				cin.clear();
 				cin.ignore(INT_MAX, '\n');
 			}
-			cout << "That is not a valid choice! Try again!" << endl;
+			cout << "That is not a valid choice, try again." << endl;
 			cout << "There are " << i << " rows in the result.  How many do you want to see per page?" << endl;
 		}
 		if (rowsPerPage > i)
@@ -150,7 +150,7 @@ void viewRental(sqlite3 *db)
 					cin.clear();
 					cin.ignore(INT_MAX, '\n');
 				}
-				cout << "That is not a valid choice! Try again!" << endl;
+				cout << "That is not a valid choice, try again." << endl;
 				cin >> choice;
 			}
 			if (choice == 0)
@@ -338,190 +338,111 @@ void printRentalPage(sqlite3_stmt *res, int rowsPerPage, int startNum)
 //starter code ends
 //where the coding begins 
 void viewCustomer(sqlite3 *db)
-{  
-    int totalRows = 0;
-    int result;
-    int menuNum = 1;
-    int choice;
-    
-    
-    string query =
-        "SELECT customer_id, last_name, first_name "
-        "FROM customer "
-        "ORDER BY last_name, first_name";
-
-    sqlite3_stmt *pRes;
-
-    string errorMessage;
-
-    // Prepare first query
-    if (sqlite3_prepare_v2(db, query.c_str(), -1, &pRes, NULL) != SQLITE_OK)
-    {
-        errorMessage = sqlite3_errmsg(db);
-
-        cout << "There was an error: "
-             << errorMessage << endl;
-
-        sqlite3_finalize(pRes);
-
-        return;
-    }
-
-
-
-    // Count rows
-    do
-    {
-        result = sqlite3_step(pRes);
-
-        if (result == SQLITE_ROW)
-            totalRows++;
-
-    } while (result == SQLITE_ROW);
-
-    sqlite3_reset(pRes);
-
-    cout << "\nPlease choose the customer you want to see:\n" << endl;
-
-    
-
-    // Display customers
-    while ((result = sqlite3_step(pRes)) == SQLITE_ROW)
-    {
-        cout << menuNum << ". ";
-
-        cout << sqlite3_column_text(pRes, 0) << " - ";
-
-        cout << sqlite3_column_text(pRes, 1) << ", ";
-
-        cout << sqlite3_column_text(pRes, 2) << endl;
-
-        menuNum++;
-    }
-
-   
-
-    cout << "\nChoose a customer: ";
-    cin >> choice;
-
-    // Input validation
-    while (!cin || choice < 1 || choice > totalRows)
-    {
-        if (!cin)
-        {
-            cin.clear();
-            cin.ignore(INT_MAX, '\n');
-        }
-
-        cout << "That is not a valid choice." << endl;
-        cout << "Choose a customer: ";
-
-        cin >> choice;
-    }
-
-    // Reset statement
-    sqlite3_reset(pRes);
-
-    // Move to chosen row
-    for (int i = 0; i < choice; i++)
-    {
-        sqlite3_step(pRes);
-    }
-
-    string customerID =
-        reinterpret_cast<const char *>(sqlite3_column_text(pRes, 0));
-
-    sqlite3_finalize(pRes);
-
-    // Query customer details
-    string detailQuery =
-        "SELECT c.first_name, "
-        "c.last_name, "
-        "a.phone, "
-        "a.address, "
-        "city.city, "
-        "c.email, "
-        "c.last_update "
-        "FROM customer c "
-        "JOIN address a "
-        "ON c.address_id = a.address_id "
-        "JOIN city "
-        "ON a.city_id = city.city_id "
-        "WHERE c.customer_id = ?";
-
-    sqlite3_stmt *detailStmt;
-
-    // Prepare detail query
-    if (sqlite3_prepare_v2(db,
-                           detailQuery.c_str(),
-                           -1,
-                           &detailStmt,
-                           NULL) != SQLITE_OK)
-    {
-        errorMessage = sqlite3_errmsg(db);
-
-        cout << "There was an error: "
-             << errorMessage << endl;
-
-        sqlite3_finalize(detailStmt);
-
-        return;
-    }
-
-    // Bind parameter
-    sqlite3_bind_int(detailStmt, 1, stoi(customerID));
-
-    // Execute detail query
-    if (sqlite3_step(detailStmt) == SQLITE_ROW)
-    {
-        string firstName =
-            reinterpret_cast<const char *>(
-                sqlite3_column_text(detailStmt, 0));
-
-        string lastName =
-            reinterpret_cast<const char *>(
-                sqlite3_column_text(detailStmt, 1));
-
-        string phone =
-            reinterpret_cast<const char *>(
-                sqlite3_column_text(detailStmt, 2));
-
-        string address =
-            reinterpret_cast<const char *>(
-                sqlite3_column_text(detailStmt, 3));
-
-        string city =
-            reinterpret_cast<const char *>(
-                sqlite3_column_text(detailStmt, 4));
-
-        string email =
-            reinterpret_cast<const char *>(
-                sqlite3_column_text(detailStmt, 5));
-
-
-        string lastUpdate =
-            reinterpret_cast<const char *>(
-                sqlite3_column_text(detailStmt, 6));
-
-        cout << "\n----Customer Information----\n" << endl;
-
-        cout << "Name: "
-             << firstName << " "
-             << lastName << endl;
-
-        cout << "Address: "
-             << address << ", "
-             << city << endl;
-             
-        cout << "Phone: "
-             << phone << endl;
-
-        cout << "Email: "
-             << email << endl;
-
-        cout << "Last Update: "
-             << lastUpdate << endl;
-    }
-
+{ string query = "SELECT customer_id, last_name, first_name FROM customer ORDER BY last_name, first_name";
+sqlite3_stmt *pRes;
+string errorMessage;
+cout << "\nPlease choose the customer you want to see:" << endl;
+if (sqlite3_prepare_v2(db, query.c_str(), -1, &pRes, NULL) != SQLITE_OK)
+{
+errorMessage = sqlite3_errmsg(db);
+cout << "There was an error: " << errorMessage << endl;
+sqlite3_finalize(pRes);
+return;
+}
+// count rows
+int i = 0, res;
+do { res = sqlite3_step(pRes); i++; } while (res == SQLITE_ROW);
+int totalRows = i - 1;
+sqlite3_reset(pRes);
+cout << "There are " << totalRows << " rows in the result.  How many do you want to see per page?" << endl;
+int rowsPerPage;
+cin >> rowsPerPage;
+while (!cin || rowsPerPage < 0)
+{
+if (!cin) { cin.clear(); cin.ignore(INT_MAX, '\n'); }
+cout << "That is not a valid choice! Try again!" << endl;
+cout << "There are " << totalRows << " rows in the result.  How many do you want to see per page?" << endl;
+cin >> rowsPerPage;
+}
+if (rowsPerPage > totalRows) rowsPerPage = totalRows;
+i = 0;
+int choice = 0;
+// paged menu
+while (choice == 0 || choice == -1)
+{
+if (i == 0)
+cout << "Please choose the customer you want to see rentals for (enter 0 to go to the next page):" << endl;
+else if (i + rowsPerPage < totalRows)
+cout << "Please choose the customer you want to see rentals for (enter 0 to go to the next page or -1 to go to the previous page):" << endl;
+else
+cout << "Please choose the customer you want to see rentals for (enter -1 to go to the previous page):" << endl;
+printCustomerPage(pRes, rowsPerPage, i);
+cin >> choice;
+while (!cin || choice < -1 || choice > totalRows)
+{
+if (!cin) { cin.clear(); cin.ignore(INT_MAX, '\n'); }
+cout << "That is not a valid choice! Try again!" << endl;
+cin >> choice;
+}
+if (choice == 0)
+{
+i += rowsPerPage;
+if (i >= totalRows)
+{
+i = totalRows - rowsPerPage;
+sqlite3_reset(pRes);
+for (int j = 0; j < i; j++) sqlite3_step(pRes);
+}
+}
+else if (choice == -1)
+{
+i -= rowsPerPage;
+if (i < 0) i = 0;
+sqlite3_reset(pRes);
+for (int j = 0; j < i; j++) sqlite3_step(pRes);
+}
+}
+sqlite3_reset(pRes);
+for (int j = 0; j < choice; j++) sqlite3_step(pRes);
+string customerID = reinterpret_cast<const char *>(sqlite3_column_text(pRes, 0));
+sqlite3_finalize(pRes);
+// get full customer details using prepared statement
+string detailQuery =
+"SELECT c.first_name, c.last_name, a.address, ci.city, a.district, a.postal_code, "
+"a.phone, c.email, c.active, c.last_update "
+"FROM customer c "
+"JOIN address a ON c.address_id = a.address_id "
+"JOIN city ci ON a.city_id = ci.city_id "
+"WHERE c.customer_id = ?";
+sqlite3_stmt *detailStmt;
+if (sqlite3_prepare_v2(db, detailQuery.c_str(), -1, &detailStmt, NULL) != SQLITE_OK)
+{
+errorMessage = sqlite3_errmsg(db);
+cout << "There was an error: " << errorMessage << endl;
+sqlite3_finalize(detailStmt);
+return;
+}
+sqlite3_bind_int(detailStmt, 1, stoi(customerID));
+if (sqlite3_step(detailStmt) == SQLITE_ROW)
+{
+string fname      = reinterpret_cast<const char *>(sqlite3_column_text(detailStmt, 0));
+string lname      = reinterpret_cast<const char *>(sqlite3_column_text(detailStmt, 1));
+string address    = reinterpret_cast<const char *>(sqlite3_column_text(detailStmt, 2));
+string city       = reinterpret_cast<const char *>(sqlite3_column_text(detailStmt, 3));
+string district   = reinterpret_cast<const char *>(sqlite3_column_text(detailStmt, 4));
+string postal     = reinterpret_cast<const char *>(sqlite3_column_text(detailStmt, 5));
+string phone      = reinterpret_cast<const char *>(sqlite3_column_text(detailStmt, 6));
+string email      = reinterpret_cast<const char *>(sqlite3_column_text(detailStmt, 7));
+int active        = sqlite3_column_int(detailStmt, 8);
+string lastUpdate = reinterpret_cast<const char *>(sqlite3_column_text(detailStmt, 9));
+cout << "----Customer Information----" << endl;
+cout << "Name: " << fname << " " << lname << endl;
+cout << "Address: " << address << endl;
+cout << city << ", " << district << " " << postal << endl;
+cout << "Phone Number: " << phone << endl;
+cout << "Email: " << email << endl;
+cout << "Active: " << (active ? "Yes" : "No") << endl;
+cout << "Last Update: " << lastUpdate << endl;
+}
     sqlite3_finalize(detailStmt);
 }
